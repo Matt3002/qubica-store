@@ -1,0 +1,51 @@
+@use 'sass:map';
+
+$breakpoints: (
+  'sm': 480px,
+  'md': 768px,
+  'lg': 1024px,
+  'xl': 1280px,
+);
+
+/** Media query mobile-first: @include respond-to('md') { ... } */
+@mixin respond-to($name) {
+  $value: map.get($breakpoints, $name);
+
+  @if $value == null {
+    @error "Breakpoint `#{$name}` non definito in $breakpoints.";
+  }
+
+  @media (min-width: $value) {
+    @content;
+  }
+}
+
+/** Contenitore centrato con padding laterale coerente. */
+@mixin container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--space-4);
+
+  @include respond-to('md') {
+    padding-inline: var(--space-5);
+  }
+}
+
+/** Nasconde visivamente ma resta leggibile dagli screen reader. */
+@mixin visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/** Anello di focus uniforme in tutta l'app. */
+@mixin focus-ring {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
