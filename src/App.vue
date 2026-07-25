@@ -1,11 +1,26 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { RouterView } from 'vue-router'
+import AppHeader from '@/components/AppHeader.vue'
+</script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <a class="skip-link" href="#main-content">Salta al contenuto</a>
+
+  <AppHeader />
+
+  <main id="main-content" class="app-main">
+    <RouterView v-slot="{ Component }">
+      <Transition name="fade" mode="out-in">
+        <component :is="Component" />
+      </Transition>
+    </RouterView>
+  </main>
 </template>
 
-<style scoped></style>
+<style scoped lang="scss">
+.app-main {
+  @include container;
+
+  padding-block: var(--space-6) var(--space-8);
+}
+</style>
