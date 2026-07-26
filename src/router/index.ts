@@ -10,13 +10,20 @@ const router = createRouter({
       component: HomeView,
     },
     {
-      // Lazy loading: il dettaglio non serve al primo caricamento.
       path: '/product/:id',
       name: 'product',
       component: () => import('@/views/ProductView.vue'),
-      // props come funzione: il componente riceve un number,
-      // non la stringa grezza di route.params.
       props: (route) => ({ id: Number(route.params.id) }),
+    },
+    {
+      path: '/cart',
+      name: 'cart',
+      component: () => import('@/views/CartView.vue'),
+    },
+    {
+      path: '/wishlist',
+      name: 'wishlist',
+      component: () => import('@/views/WishlistView.vue'),
     },
   ],
   scrollBehavior(to, from, savedPosition) {

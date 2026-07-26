@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import CategoryNav from '@/components/CategoryNav.vue'
+import CounterLink from '@/components/CounterLink.vue'
 import ThemeToggle from '@/components/ThemeToggle.vue'
+import { useCartStore } from '@/stores/cart'
+import { useWishlistStore } from '@/stores/wishlist'
+
+const cart = useCartStore()
+const wishlist = useWishlistStore()
 </script>
 
 <template>
@@ -16,6 +22,13 @@ import ThemeToggle from '@/components/ThemeToggle.vue'
       </nav>
 
       <div class="app-header__actions">
+        <CounterLink
+          :to="{ name: 'wishlist' }"
+          label="Wishlist"
+          icon="♡"
+          :count="wishlist.totalItems"
+        />
+        <CounterLink :to="{ name: 'cart' }" label="Carrello" icon="⛨" :count="cart.totalItems" />
         <ThemeToggle />
       </div>
     </div>

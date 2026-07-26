@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
 import { getProductById } from '@/api/products'
 import { useAsyncData } from '@/composables/useAsyncData'
 import { formatCategoryLabel, toSlug } from '@/utils/category'
 import { formatPrice } from '@/utils/format'
+import { useCartStore } from '@/stores/cart'
+import { useWishlistStore } from '@/stores/wishlist'
 
 const props = defineProps<{ id: number }>()
 
@@ -18,6 +20,34 @@ const categoryLink = computed(() => {
     slug: toSlug(product.value.category),
   }
 })
+
+const cart = useCartStore()
+const wishlist = useWishlistStore()
+
+const isInWishlist = computed(() => (product.value ? wishlist.has(product.value.id) : false))
+
+const feedback = ref<string | null>(null)
+let feedbackTimer: ReturnType<typeof setTimeout> | undefined
+
+function announce(message: string): void {
+  feedback.value = message
+  clearTimeout(feedbackTimer)
+  feedbackTimer = setTimeout(() => (feedback.value = null), 3000)
+}
+
+function handleAddToCart(): void {
+  if (!product.value) return
+  cart.addItem(product.value)
+  announce('Prodotto aggiunto al carrello.')
+}
+
+function handleToggleWishlist(): void {
+  if (!product.value) return
+  const added = wishlist.toggle(product.value)
+  announce(added ? 'Prodotto aggiunto alla wishlist.' : 'Prodotto rimosso dalla wishlist.')
+}
+
+onUnmounted(() => clearTimeout(feedbackTimer))
 
 // Il router riusa il componente se si naviga da /product/1 a /product/2:
 // senza watch sull'id, il secondo prodotto non verrebbe mai caricato.
@@ -84,6 +114,23 @@ watch(() => props.id, execute, { immediate: true })
         </p>
 
         <p class="product-view__price">{{ formatPrice(product.price) }}</p>
+
+        <div class="product-view__actions">
+          <button type="button" class="button" @click="handleAddToCart">
+            Aggiungi al carrello
+          </button>
+          <button
+            type="button"
+            class="button button--ghost"
+            :aria-pressed="isInWishlist"
+            @click="handleToggleWishlist"
+          >
+            <span aria-hidden="true">{{ isInWishlist ? '♥' : '♡' }}</span>
+            {{ isInWishlist ? 'Nella wishlist' : 'Aggiungi alla wishlist' }}
+          </button>
+        </div>
+
+        <p class="product-view__feedback" role="status">{{ feedback }}</p>
 
         <div class="product-view__description">
           <h2 class="product-view__description-title">Descrizione</h2>
@@ -254,5 +301,17 @@ watch(() => props.id, execute, { immediate: true })
   &--medium {
     width: 60%;
   }
+}
+
+.product-view__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.product-view__feedback {
+  min-height: 1.5rem;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
 }
 </style>
