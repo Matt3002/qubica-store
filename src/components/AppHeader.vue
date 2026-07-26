@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import CategoryNav from '@/components/CategoryNav.vue'
 import ThemeToggle from '@/components/ThemeToggle.vue'
 </script>
 
@@ -10,9 +11,8 @@ import ThemeToggle from '@/components/ThemeToggle.vue'
         <span class="app-header__logo-text">Strike Store</span>
       </RouterLink>
 
-      <!-- La navigazione per categorie arriva nello Step 4 -->
       <nav class="app-header__nav" aria-label="Categorie prodotti">
-        <!-- placeholder -->
+        <CategoryNav />
       </nav>
 
       <div class="app-header__actions">
@@ -35,13 +35,25 @@ import ThemeToggle from '@/components/ThemeToggle.vue'
 .app-header__inner {
   @include container;
 
-  display: flex;
+  display: grid;
+  grid-template-areas:
+    'logo actions'
+    'nav nav';
+  grid-template-columns: 1fr auto;
   align-items: center;
-  gap: var(--space-4);
-  min-height: var(--header-height);
+  gap: var(--space-2) var(--space-4);
+  padding-block: var(--space-3);
+
+  @include respond-to('md') {
+    grid-template-areas: 'logo nav actions';
+    grid-template-columns: auto 1fr auto;
+    min-height: var(--header-height);
+    padding-block: 0;
+  }
 }
 
 .app-header__logo {
+  grid-area: logo;
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -55,14 +67,14 @@ import ThemeToggle from '@/components/ThemeToggle.vue'
 }
 
 .app-header__nav {
-  flex: 1;
+  grid-area: nav;
   min-width: 0;
 }
 
 .app-header__actions {
+  grid-area: actions;
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  margin-left: auto;
 }
 </style>
