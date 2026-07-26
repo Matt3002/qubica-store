@@ -1,34 +1,84 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
-import { getProducts } from '@/api/products'
+import { computed, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { ApiError } from '@/api/http'
+import { getProducts, getProductsByCategory } from '@/api/products'
 import ProductGrid from '@/components/ProductGrid.vue'
 import { useAsyncData } from '@/composables/useAsyncData'
+import { useCategoriesStore } from '@/stores/categories'
+import type { Product } from '@/types/product'
+import { findCategoryBySlug, formatCategoryLabel } from '@/utils/category'
 
-const { data, error, state, execute } = useAsyncData(getProducts)
+const route = useRoute()
+const categoriesStore = useCategoriesStore()
+
+const activeSlug = computed(() => (route.query.category as string | undefined) ?? null)
+
+/**
+ * Sorgente unica dei prodotti mostrati.
+ * Lo slug dell'URL non è reversibile: per risalire al nome
+ * della categoria servono le categorie caricate dall'API.
+ */
+async function loadProducts(): Promise<Product[]> {
+  const slug = activeSlug.value
+
+  if (!slug) return getProducts()
+
+  await categoriesStore.ensureLoaded()
+  const category = findCategoryBySlug(categoriesStore.categories, slug)
+
+  if (!category) {
+    throw new ApiError(`La categoria "${slug}" non esiste.`, 404)
+  }
+
+  return getProductsByCategory(category)
+}
+
+const { data, error, state, execute } = useAsyncData(loadProducts)
 
 const products = computed(() => data.value ?? [])
 const isLoading = computed(() => state.value === 'loading' || state.value === 'idle')
 
-onMounted(execute)
+const pageTitle = computed(() => {
+  const slug = activeSlug.value
+  if (!slug) return 'Tutti i prodotti'
+
+  const category = findCategoryBySlug(categoriesStore.categories, slug)
+  return category ? formatCategoryLabel(category) : 'Categoria'
+})
+
+// immediate: copre sia il primo caricamento sia il deep link;
+// il watch gestisce i cambi di categoria successivi.
+watch(activeSlug, execute, { immediate: true })
 </script>
 
 <template>
   <section class="home">
     <header class="home__header">
-      <h1 class="home__title">Tutti i prodotti</h1>
+      <h1 class="home__title">{{ pageTitle }}</h1>
       <p v-if="state === 'success'" class="home__count">
-        {{ products.length }} prodotti disponibili
+        {{ products.length }}
+        {{ products.length === 1 ? 'prodotto disponibile' : 'prodotti disponibili' }}
       </p>
     </header>
 
     <div v-if="state === 'error'" class="home__error" role="alert">
       <h2 class="home__error-title">Qualcosa è andato storto</h2>
       <p class="home__error-message">{{ error?.message }}</p>
-      <button type="button" class="home__retry" @click="execute">Riprova</button>
+      <div class="home__error-actions">
+        <button type="button" class="home__button" @click="execute">Riprova</button>
+        <RouterLink
+          v-if="activeSlug"
+          class="home__button home__button--ghost"
+          :to="{ name: 'home', query: {} }"
+        >
+          Vedi tutti i prodotti
+        </RouterLink>
+      </div>
     </div>
 
     <p v-else-if="state === 'success' && products.length === 0" class="home__empty">
-      Nessun prodotto disponibile al momento.
+      Nessun prodotto in questa categoria.
     </p>
 
     <ProductGrid v-else :products="products" :loading="isLoading" />
@@ -76,17 +126,37 @@ onMounted(execute)
   color: var(--color-text-muted);
 }
 
-.home__retry {
+.home__error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.home__button {
+  display: inline-block;
   padding: var(--space-2) var(--space-5);
   background-color: var(--color-primary);
   color: var(--color-on-primary);
-  border: none;
+  border: 1px solid transparent;
   border-radius: var(--radius-sm);
   font-weight: 600;
-  transition: background-color var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
 
   &:hover {
     background-color: var(--color-primary-hover);
+  }
+
+  &--ghost {
+    background-color: transparent;
+    color: var(--color-text);
+    border-color: var(--color-border);
+
+    &:hover {
+      background-color: var(--color-surface-alt);
+      border-color: var(--color-text-muted);
+    }
   }
 }
 
