@@ -66,10 +66,10 @@ watch(activeSlug, execute, { immediate: true })
       <h2 class="home__error-title">Qualcosa è andato storto</h2>
       <p class="home__error-message">{{ error?.message }}</p>
       <div class="home__error-actions">
-        <button type="button" class="home__button" @click="execute">Riprova</button>
+        <button type="button" class="button" @click="execute">Riprova</button>
         <RouterLink
           v-if="activeSlug"
-          class="home__button home__button--ghost"
+          class="button button--ghost"
           :to="{ name: 'home', query: {} }"
         >
           Vedi tutti i prodotti
@@ -130,34 +130,6 @@ watch(activeSlug, execute, { immediate: true })
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
-}
-
-.home__button {
-  display: inline-block;
-  padding: var(--space-2) var(--space-5);
-  background-color: var(--color-primary);
-  color: var(--color-on-primary);
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  font-weight: 600;
-  transition:
-    background-color var(--transition-fast),
-    border-color var(--transition-fast);
-
-  &:hover {
-    background-color: var(--color-primary-hover);
-  }
-
-  &--ghost {
-    background-color: transparent;
-    color: var(--color-text);
-    border-color: var(--color-border);
-
-    &:hover {
-      background-color: var(--color-surface-alt);
-      border-color: var(--color-text-muted);
-    }
-  }
 }
 
 .home__empty {
