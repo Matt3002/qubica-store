@@ -2,9 +2,9 @@
 import CategoryNav from '@/components/CategoryNav.vue'
 import CounterLink from '@/components/CounterLink.vue'
 import ThemeToggle from '@/components/ThemeToggle.vue'
+import UserMenu from '@/components/UserMenu.vue'
 import { useCartStore } from '@/stores/cart'
 import { useWishlistStore } from '@/stores/wishlist'
-import UserMenu from '@/components/UserMenu.vue'
 
 const cart = useCartStore()
 const wishlist = useWishlistStore()
@@ -30,17 +30,7 @@ const wishlist = useWishlistStore()
           :count="wishlist.totalItems"
         />
         <CounterLink :to="{ name: 'cart' }" label="Carrello" icon="⛨" :count="cart.totalItems" />
-        <div class="app-header__actions">
-          <CounterLink
-            :to="{ name: 'wishlist' }"
-            label="Wishlist"
-            icon="♡"
-            :count="wishlist.totalItems"
-          />
-          <CounterLink :to="{ name: 'cart' }" label="Carrello" icon="⛨" :count="cart.totalItems" />
-          <UserMenu />
-          <ThemeToggle />
-        </div>
+        <UserMenu />
         <ThemeToggle />
       </div>
     </div>

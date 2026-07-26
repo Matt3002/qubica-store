@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
+import AppErrorDialog from '@/components/AppErrorDialog.vue'
 import AppHeader from '@/components/AppHeader.vue'
 </script>
 
@@ -15,6 +16,8 @@ import AppHeader from '@/components/AppHeader.vue'
       </Transition>
     </RouterView>
   </main>
+
+  <AppErrorDialog />
 </template>
 
 <style scoped lang="scss">
